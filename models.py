@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine, Column, String, Integer, Boolean, Float, ForeignKey
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import declarative_base, relationship
 from sqlalchemy_utils.types import ChoiceType
 
 # cria a conexão do seu banco
@@ -41,12 +41,19 @@ class Pedido(Base):
     status = Column("status", String)
     usuario = Column("usuario", ForeignKey("usuarios.id"))
     preco = Column("preco", Float)
-    # itens = 
+    itens = relationship("ItemPedido", cascade="all, delete")
 
     def __init__(self, usuario, status="PENDENTE", preco=0):
         self.usuario = usuario
         self.preco = preco
         self.status = status
+
+    def calcular_preco(self):
+        # percorrer todos os itens do pedido
+        # somar todos os precos de todos os itens dos pedidos
+        # editar no campo "preco" o valor final do preco do pedido
+        self.preco = sum(item.preco_unitario * item.quantidade for item in self.itens)
+        
 
 # ItensPedido
 class ItemPedido(Base):
@@ -65,6 +72,3 @@ class ItemPedido(Base):
         self.tamanho = tamanho
         self.preco_unitario = preco_unitario
         self.pedido = pedido
-
-# executa a criação dos metadados do seu banco (cria efetivamente o banco de dados)
-Base.metadata.create_all(db)
